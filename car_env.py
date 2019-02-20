@@ -22,7 +22,7 @@ class CarEnv(object):
     speed = 50.
     dt = 0.1
 
-    def __init__(self, discrete_action=False):
+    def __init__(self, discrete_action=False, self_obstacle= False):
         self.is_discrete_action = discrete_action
         if discrete_action:
             self.actions = [-1, 0, 1]
@@ -32,12 +32,21 @@ class CarEnv(object):
         self.terminal = False
         # node1 (x, y, r, w, l),
         self.car_info = np.array([0, 0, 0, 20, 40], dtype=np.float64)   # car coordination
-        self.obstacle_coords = np.array([
-            [120, 120],
-            [380, 120],
-            [380, 380],
-            [120, 380],
-        ])
+        if self_obstacle:
+            self.obstacle_coords = np.array([
+                [90, 90],
+                [410, 90],
+                [410, 410],
+                [90, 410],
+            ])
+        else:
+            self.obstacle_coords = np.array([
+                [120, 120],
+                [380, 120],
+                [380, 380],
+                [120, 380],
+            ])
+
         self.sensor_info = self.sensor_max + np.zeros((self.n_sensor, 3))  # n sensors, (distance, end_x, end_y)
 
     def step(self, action):

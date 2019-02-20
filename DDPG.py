@@ -36,10 +36,11 @@ MEMORY_CAPACITY = 2000
 BATCH_SIZE = 16
 VAR_MIN = 0.1
 RENDER = True
-LOAD = False
+LOAD = True
 DISCRETE_ACTION = False
 
 env = CarEnv(discrete_action=DISCRETE_ACTION)
+env2 = CarEnv(discrete_action=DISCRETE_ACTION,self_obstacle=True)
 STATE_DIM = env.state_dim
 ACTION_DIM = env.action_dim
 ACTION_BOUND = env.action_bound
@@ -248,13 +249,13 @@ def train():
 
 
 def eval():
-    env.set_fps(30)
+    env2.set_fps(30)
     while True:
-        s = env.reset()
+        s = env2.reset()
         while True:
-            env.render()
+            env2.render()
             a = actor.choose_action(s)
-            s_, r, done = env.step(a)
+            s_, r, done = env2.step(a)
             s = s_
             if done:
                 break
