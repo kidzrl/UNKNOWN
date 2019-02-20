@@ -4,6 +4,7 @@ You can customize this script in a way you want.
 Requirement:
 pyglet >= 1.2.4
 numpy >= 1.12.1
+123
 """
 import numpy as np
 import pyglet
