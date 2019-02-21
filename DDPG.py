@@ -36,7 +36,7 @@ MEMORY_CAPACITY = 2000
 BATCH_SIZE = 16
 VAR_MIN = 0.1
 RENDER = True
-LOAD = True
+LOAD = False
 DISCRETE_ACTION = False
 
 env = CarEnv(discrete_action=DISCRETE_ACTION)
@@ -205,20 +205,24 @@ else:
 def train():
     var = 2.  # control exploration
     for ep in range(MAX_EPISODES):
-        s = env.reset()
+        s = env2.reset()
         ep_step = 0
 
         for t in range(MAX_EP_STEPS):
         # while True:
             if RENDER:
-                env.render()
+                env2.render()
 
             # Added exploration noise
             a = actor.choose_action(s)
             a = np.clip(np.random.normal(a, var), *ACTION_BOUND)    # add randomness to action selection for exploration
-            s_, r, done = env.step(a)
+            s_, r, done = env2.step(a)
             M.store_transition(s, a, r, s_)
-
+            s_str = map(str,s)
+            sn_str = map(str,s_)
+            a_str = map(str,a)
+            string = " ".join(s_str) + " " + "".join(a_str) + " " + str(r) + " "+ " ".join(sn_str) + "\n"
+            f.write(string)
             if M.pointer > MEMORY_CAPACITY:
                 var = max([var*.9995, VAR_MIN])    # decay the action randomness
                 b_M = M.sample(BATCH_SIZE)
@@ -264,4 +268,5 @@ if __name__ == '__main__':
     if LOAD:
         eval()
     else:
+        f = open('env2.txt', 'w')
         train()
