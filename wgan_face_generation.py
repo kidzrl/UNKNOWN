@@ -16,7 +16,7 @@ images = glob.glob(os.path.join(dataset, '*.*'))
 print(len(images))
 
 
-batch_size = 100
+batch_size = 48
 z_dim = 100
 WIDTH = 64
 HEIGHT = 64
