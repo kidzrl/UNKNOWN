@@ -14,7 +14,7 @@ from imageio import imread, imsave, mimsave
 import cv2
 import glob
 from tqdm import tqdm
-
+import random
 
 # In[ ]:
 
@@ -48,6 +48,24 @@ def lrelu(x, leak=0.2):
 
 
 # In[ ]:
+
+def get_random_batch(filename, batch_size):
+    batch = []
+    f_lines = []
+    real_data = open(filename)
+    lines = real_data.readlines()
+    linenum = len(lines)
+    for i in lines:
+        list_to_float = i.strip('\n')
+        arr = list_to_float.split(' ')
+        if (len(arr) > 6):
+            while '' in arr:
+                arr.remove('')
+        a_float_m = map(float,arr)
+        f_lines.append(list(a_float_m[:-1]))
+    for i in range(batch_size):
+        batch.append(f_lines[random.randint(0, linenum - 1)])
+    return batch
 
 
 def discriminator(image, reuse=None, is_training=is_training):
