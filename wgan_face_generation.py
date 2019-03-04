@@ -30,16 +30,16 @@ if not os.path.exists(OUTPUT_DIR):
 X = tf.placeholder(dtype=tf.float32, shape=[batch_size, 12], name='X')
 noise = tf.placeholder(dtype=tf.float32, shape=[batch_size, z_dim], name='noise')
 is_training = tf.placeholder(dtype=tf.bool, name='is_training')
+f_lines = []
+real_data = open('env2.txt')
+lines = real_data.readlines()
+linenum = len(lines)
 
 def lrelu(x, leak=0.2):
     return tf.maximum(x, leak * x)
 
 def get_random_batch(filename, batch_size):
     batch = []
-    f_lines = []
-    real_data = open(filename)
-    lines = real_data.readlines()
-    linenum = len(lines)
     for i in lines:
         list_to_float = i.strip('\n')
         arr = list_to_float.split(' ')
@@ -116,29 +116,29 @@ z_samples = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
 samples = []
 loss = {'d': [], 'g': []}
 
-# for i in tqdm(range(60000)):
-#     for j in range(DIS_ITERS):
-#         n = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
-#         batch = get_random_batch('env2.txt', batch_size)
-#         _, d_ls = sess.run([optimizer_d, loss_d], feed_dict={X: batch, noise: n, is_training: True})
-#
-#     _, g_ls = sess.run([optimizer_g, loss_g], feed_dict={X: batch, noise: n, is_training: True})
-#
-#     loss['d'].append(d_ls)
-#     loss['g'].append(g_ls)
-#     if i % 500 == 0:
-#         print(i, d_ls, g_ls)
-# plt.plot(loss['d'], label='Discriminator')
-# plt.plot(loss['g'], label='Generator')
-# plt.legend(loc='upper right')
-# plt.savefig(os.path.join(OUTPUT_DIR, 'Loss.png'))
-# plt.show()
+for i in tqdm(range(60000)):
+    for j in range(DIS_ITERS):
+        n = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
+        batch = get_random_batch('env2.txt', batch_size)
+        _, d_ls = sess.run([optimizer_d, loss_d], feed_dict={X: batch, noise: n, is_training: True})
 
-n = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
-saver = tf.train.Saver()
-#saver.save(sess, os.path.join(OUTPUT_DIR, 'wgan_' + dataset), global_step=60000)
-saver.restore(sess, 'samples_lfw_new_imgs/wgan_lfw_new_imgs-60000')
-#print(sess.run(g, feed_dict={noise:n,is_training:False}))
-lines = sess.run(g, feed_dict={noise:n,is_training:False})
-file_w = open('env_gan.txt', 'w')
-file_w.writelines(str(lines))
+    _, g_ls = sess.run([optimizer_g, loss_g], feed_dict={X: batch, noise: n, is_training: True})
+
+    loss['d'].append(d_ls)
+    loss['g'].append(g_ls)
+    if i % 500 == 0:
+        print(i, d_ls, g_ls)
+plt.plot(loss['d'], label='Discriminator')
+plt.plot(loss['g'], label='Generator')
+plt.legend(loc='upper right')
+plt.savefig(os.path.join(OUTPUT_DIR, 'Loss.png'))
+plt.show()
+
+# n = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
+# saver = tf.train.Saver()
+# #saver.save(sess, os.path.join(OUTPUT_DIR, 'wgan_' + dataset), global_step=60000)
+# saver.restore(sess, 'samples_lfw_new_imgs/wgan_lfw_new_imgs-60000')
+# #print(sess.run(g, feed_dict={noise:n,is_training:False}))
+# lines = sess.run(g, feed_dict={noise:n,is_training:False})
+# file_w = open('env_gan.txt', 'w')
+# file_w.writelines(str(lines))
