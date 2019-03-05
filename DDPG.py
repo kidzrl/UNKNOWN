@@ -251,6 +251,55 @@ def train():
     save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
     print("\nSave Model %s\n" % save_path)
 
+def train_gen_data():
+    file = open('env_gan.txt', 'r')
+    lines = file.readlines()
+    var = 2.  # control exploration
+    for ep in range(MAX_EPISODES):
+        s = env2.reset()
+        ep_step = 0
+        for t in range(MAX_EP_STEPS):
+            # while True:
+            if RENDER:
+                env2.render()
+
+            # Added exploration noise
+            a = actor.choose_action(s)
+            a = np.clip(np.random.normal(a, var), *ACTION_BOUND)  # add randomness to action selection for exploration
+            s_, r, done = env2.step(a)
+            M.store_transition(s, a, r, s_)
+            s_str = map(str, s)
+            sn_str = map(str, s_)
+            a_str = map(str, a)
+            string = " ".join(s_str) + " " + "".join(a_str) + " " + str(r) + " " + " ".join(sn_str) + "\n"
+            f.write(string)
+            if M.pointer > MEMORY_CAPACITY:
+                var = max([var * .9995, VAR_MIN])  # decay the action randomness
+                b_M = M.sample(BATCH_SIZE)
+                b_s = b_M[:, :STATE_DIM]
+                b_a = b_M[:, STATE_DIM: STATE_DIM + ACTION_DIM]
+                b_r = b_M[:, -STATE_DIM - 1: -STATE_DIM]
+                b_s_ = b_M[:, -STATE_DIM:]
+
+                critic.learn(b_s, b_a, b_r, b_s_)
+                actor.learn(b_s)
+
+            s = s_
+            ep_step += 1
+
+            if done or t == MAX_EP_STEPS - 1:
+                # if done:
+                print('Ep:', ep,
+                      '| Steps: %i' % int(ep_step),
+                      '| Explore: %.2f' % var,
+                      )
+                break
+
+    if os.path.isdir(path): shutil.rmtree(path)
+    os.mkdir(path)
+    ckpt_path = os.path.join(path, 'DDPG.ckpt')
+    save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
+    print("\nSave Model %s\n" % save_path)
 
 def eval():
     env2.set_fps(30)
@@ -268,5 +317,6 @@ if __name__ == '__main__':
     if LOAD:
         eval()
     else:
-        f = open('env2.txt', 'w')
-        train()
+        #f = open('env2.txt', 'w')
+        #train()
+        train_gen_data()

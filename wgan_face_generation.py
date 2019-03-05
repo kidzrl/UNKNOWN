@@ -145,6 +145,8 @@ for i in range(2000):
     lines = sess.run(g, feed_dict={noise:n,is_training:False})
     for line in lines:
         l_line = list(line)
-        p_line = str(l_line)
-        p_line = p_line.strip('[],')
+        #p_line = str(l_line)
+        #p_line = p_line.strip('[],')
+        p_line = list(map(lambda x:str(x), l_line))
+        p_line = ' '.join(p_line)
         file_w.writelines(p_line + '\n')
