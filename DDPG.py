@@ -20,13 +20,13 @@ import numpy as np
 import os
 import shutil
 from car_env import CarEnv
-
+import random
 
 np.random.seed(1)
 tf.set_random_seed(1)
 
-MAX_EPISODES = 500
-MAX_EP_STEPS = 600
+MAX_EPISODES = 1000
+MAX_EP_STEPS = 1000
 LR_A = 1e-4  # learning rate for actor
 LR_C = 1e-4  # learning rate for critic
 GAMMA = 0.9  # reward discount
@@ -36,7 +36,7 @@ MEMORY_CAPACITY = 2000
 BATCH_SIZE = 16
 VAR_MIN = 0.1
 RENDER = True
-LOAD = False
+LOAD = True
 DISCRETE_ACTION = False
 
 env = CarEnv(discrete_action=DISCRETE_ACTION)
@@ -198,6 +198,7 @@ path = './discrete' if DISCRETE_ACTION else './continuous'
 
 if LOAD:
     saver.restore(sess, tf.train.latest_checkpoint(path))
+    #saver.restore(sess, 'DDPG_GAN.ckpt')
 else:
     sess.run(tf.global_variables_initializer())
 
@@ -218,11 +219,11 @@ def train():
             a = np.clip(np.random.normal(a, var), *ACTION_BOUND)    # add randomness to action selection for exploration
             s_, r, done = env2.step(a)
             M.store_transition(s, a, r, s_)
-            s_str = map(str,s)
-            sn_str = map(str,s_)
-            a_str = map(str,a)
-            string = " ".join(s_str) + " " + "".join(a_str) + " " + str(r) + " "+ " ".join(sn_str) + "\n"
-            f.write(string)
+            # s_str = map(str,s)
+            # sn_str = map(str,s_)
+            # a_str = map(str,a)
+            # string = " ".join(s_str) + " " + "".join(a_str) + " " + str(r) + " "+ " ".join(sn_str) + "\n"
+            #f.write(string)
             if M.pointer > MEMORY_CAPACITY:
                 var = max([var*.9995, VAR_MIN])    # decay the action randomness
                 b_M = M.sample(BATCH_SIZE)
@@ -256,23 +257,17 @@ def train_gen_data():
     lines = file.readlines()
     var = 2.  # control exploration
     for ep in range(MAX_EPISODES):
-        s = env2.reset()
+        line = lines[random.randint(0, len(lines))]
+        list_line = line.split(' ')
+        list_line = list(map(float, list_line))
+        s = list_line[0:5]
         ep_step = 0
         for t in range(MAX_EP_STEPS):
-            # while True:
-            if RENDER:
-                env2.render()
-
             # Added exploration noise
-            a = actor.choose_action(s)
-            a = np.clip(np.random.normal(a, var), *ACTION_BOUND)  # add randomness to action selection for exploration
-            s_, r, done = env2.step(a)
+            a = list_line[5]
+            r = list_line[6]
+            s_ = list_line[7:12]
             M.store_transition(s, a, r, s_)
-            s_str = map(str, s)
-            sn_str = map(str, s_)
-            a_str = map(str, a)
-            string = " ".join(s_str) + " " + "".join(a_str) + " " + str(r) + " " + " ".join(sn_str) + "\n"
-            f.write(string)
             if M.pointer > MEMORY_CAPACITY:
                 var = max([var * .9995, VAR_MIN])  # decay the action randomness
                 b_M = M.sample(BATCH_SIZE)
@@ -287,7 +282,7 @@ def train_gen_data():
             s = s_
             ep_step += 1
 
-            if done or t == MAX_EP_STEPS - 1:
+            if t == MAX_EP_STEPS - 1:
                 # if done:
                 print('Ep:', ep,
                       '| Steps: %i' % int(ep_step),
@@ -297,7 +292,7 @@ def train_gen_data():
 
     if os.path.isdir(path): shutil.rmtree(path)
     os.mkdir(path)
-    ckpt_path = os.path.join(path, 'DDPG.ckpt')
+    ckpt_path = os.path.join(path, 'DDPG_GAN.ckpt')
     save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
     print("\nSave Model %s\n" % save_path)
 

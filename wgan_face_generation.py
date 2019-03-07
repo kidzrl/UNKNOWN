@@ -140,11 +140,15 @@ saver = tf.train.Saver()
 saver.restore(sess, 'samples_lfw_new_imgs/wgan_lfw_new_imgs-60000')
 #print(sess.run(g, feed_dict={noise:n,is_training:False}))
 file_w = open('env_gan.txt', 'w')
-for i in range(2000):
+for i in range(100):
     n = np.random.uniform(-1.0, 1.0, [batch_size, z_dim]).astype(np.float32)
     lines = sess.run(g, feed_dict={noise:n,is_training:False})
     for line in lines:
         l_line = list(line)
+        if l_line[6] > 0:
+            l_line[6] = 1
+        else:
+            l_line[6] = 0
         #p_line = str(l_line)
         #p_line = p_line.strip('[],')
         p_line = list(map(lambda x:str(x), l_line))
