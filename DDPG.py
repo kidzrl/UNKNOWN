@@ -253,7 +253,7 @@ def train():
     print("\nSave Model %s\n" % save_path)
 
 def train_gen_data():
-    file = open('env_gan.txt', 'r')
+    file = open('final_data.txt', 'r')
     lines = file.readlines()
     var = 2.  # control exploration
     for ep in range(MAX_EPISODES):
@@ -269,7 +269,7 @@ def train_gen_data():
             s_ = list_line[7:12]
             M.store_transition(s, a, r, s_)
             if M.pointer > MEMORY_CAPACITY:
-                var = max([var * .9995, VAR_MIN])  # decay the action randomness
+                var = max([var * .999, VAR_MIN])  # decay the action randomness
                 b_M = M.sample(BATCH_SIZE)
                 b_s = b_M[:, :STATE_DIM]
                 b_a = b_M[:, STATE_DIM: STATE_DIM + ACTION_DIM]
@@ -293,7 +293,7 @@ def train_gen_data():
     if os.path.isdir(path): shutil.rmtree(path)
     os.mkdir(path)
     ckpt_path = os.path.join(path, 'DDPG_GAN.ckpt')
-    save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
+    save_path = saver.save(sess, ckpt_path, write_meta_graph=True)
     print("\nSave Model %s\n" % save_path)
 
 def eval():
