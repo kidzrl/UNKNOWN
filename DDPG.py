@@ -25,7 +25,7 @@ import random
 np.random.seed(1)
 tf.set_random_seed(1)
 
-MAX_EPISODES = 1000
+MAX_EPISODES = 2000
 MAX_EP_STEPS = 1000
 LR_A = 1e-4  # learning rate for actor
 LR_C = 1e-4  # learning rate for critic
